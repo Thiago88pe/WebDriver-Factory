@@ -1,5 +1,6 @@
 import json
 import os
+import logging
 from abc import ABC, abstractmethod
 
 from dotenv import load_dotenv
@@ -7,6 +8,8 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 load_dotenv(override=True)
 
@@ -71,19 +74,23 @@ class WebDriverFactory:
         """Inicializa a fábrica de WebDriver, determinando o navegador a ser utilizado."""
         self.browser = os.getenv(key="BROWSER", default="chrome").lower()
         if self.browser not in self._browsers:
+            logging.error(f"Navegador '{self.browser.upper()}' não suportado.")
             raise ValueError(f"Navegador '{self.browser.upper()}' não suportado.")
 
     def get_driver(self):
         """Cria e retorna uma instância do WebDriver configurado para o navegador escolhido."""
-
+        logging.info(f"Iniciando configurações do WebDriver para o navegador {self.browser.upper()}.")
         driver_class, webdriver_options, service, manager  = self._browsers[self.browser]
 
         # Configura as opções do navegador
         options = webdriver_options().get_options()
+        logging.info(f"Opções do navegador {self.browser.upper()} configuradas com sucesso.")
 
         # Configura o serviço do navegador
         service_instance = service(executable_path=manager().install())
+        logging.info(f"Serviços do navegador {self.browser.upper()} configurados com sucesso.")
 
         # Cria a instância do WebDriver
         driver = driver_class(options=options, service=service_instance)
+        logging.info(f"WebDriver iniciado para o browser {self.browser.upper()} iniciado com sucesso.")
         return driver
