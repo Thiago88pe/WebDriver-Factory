@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 class WebDriverOptions(ABC):
     """Interface para configuração de opções e preferências do navegador."""
@@ -24,3 +25,9 @@ class ChromeWebDriverOptions(WebDriverOptions):
         }
         return prefs
     
+    def get_options(self):
+
+        options = ChromeOptions()
+
+        options.add_experimental_option(name="prefs", value=self.get_prefs())
+        return options
