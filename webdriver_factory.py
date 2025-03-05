@@ -49,7 +49,7 @@ class WebDriverFactory:
         "chrome": (Chrome, ChromeWebDriverOptions, ChromeService, ChromeDriverManager),
 
     }
-    def _init_(self) -> None:
+    def __init__(self) -> None:
         """Inicializa a fábrica de WebDriver, determinando o navegador a ser utilizado."""
         self.browser = os.getenv(key="BROWSER", default="chrome").lower()
         if self.browser not in self._browsers:
