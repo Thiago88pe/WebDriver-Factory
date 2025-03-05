@@ -1,10 +1,14 @@
 import os
 from abc import ABC, abstractmethod
 
+from dotenv import load_dotenv
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+
+load_dotenv(override=True)
+
 
 class WebDriverOptions(ABC):
     """Interface para configuração de opções e preferências do navegador."""
@@ -33,6 +37,8 @@ class ChromeWebDriverOptions(WebDriverOptions):
     def get_options(self):
 
         options = ChromeOptions()
+        if os.getenv(key="HEADLESS", default="false").lower() == "true":
+            options.add_argument(argument="--headless")
 
         options.add_experimental_option(name="prefs", value=self.get_prefs())
         return options
@@ -45,7 +51,7 @@ class WebDriverFactory:
     }
     def _init_(self) -> None:
         """Inicializa a fábrica de WebDriver, determinando o navegador a ser utilizado."""
-        self.browser = "chrome"
+        self.browser = os.getenv(key="BROWSER", default="chrome").lower()
         if self.browser not in self._browsers:
             raise ValueError(f"Navegador '{self.browser.upper()}' não suportado.")
 
