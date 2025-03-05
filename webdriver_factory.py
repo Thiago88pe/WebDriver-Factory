@@ -2,15 +2,20 @@ import os
 from abc import ABC, abstractmethod
 
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
 class WebDriverOptions(ABC):
     """Interface para configuração de opções e preferências do navegador."""
 
     @abstractmethod
     def get_prefs(self):
+        pass
 
     @abstractmethod
     def get_options(self):
+        pass
 
 class ChromeWebDriverOptions(WebDriverOptions):
     """Configuração de opções e preferências do navegador Chrome."""
@@ -31,3 +36,30 @@ class ChromeWebDriverOptions(WebDriverOptions):
 
         options.add_experimental_option(name="prefs", value=self.get_prefs())
         return options
+
+class WebDriverFactory:
+    """Factory para criar WebDriver de diferentes navegadores."""
+    _browsers = {
+        "chrome": (Chrome, ChromeWebDriverOptions, ChromeService, ChromeDriverManager),
+
+    }
+    def _init_(self) -> None:
+        """Inicializa a fábrica de WebDriver, determinando o navegador a ser utilizado."""
+        self.browser = "chrome"
+        if self.browser not in self._browsers:
+            raise ValueError(f"Navegador '{self.browser.upper()}' não suportado.")
+
+    def get_driver(self):
+        """Cria e retorna uma instância do WebDriver configurado para o navegador escolhido."""
+
+        driver_class, webdriver_options, service, manager  = self._browsers[self.browser]
+
+        # Configura as opções do navegador
+        options = webdriver_options().get_options()
+
+        # Configura o serviço do navegador
+        service_instance = service(executable_path=manager().install())
+
+        # Cria a instância do WebDriver
+        driver = driver_class(options=options, service=service_instance)
+        return driver
