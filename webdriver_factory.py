@@ -1,3 +1,4 @@
+import json
 import os
 from abc import ABC, abstractmethod
 
@@ -26,11 +27,28 @@ class ChromeWebDriverOptions(WebDriverOptions):
     def get_prefs(self):
 
         diretorio_download = os.getcwd()
+        settings = {
+                "recentDestinations": [{"id": "Save as PDF", "origin": "local", "account": ""}],
+                "selectedDestinationId": "Save as PDF",
+                "version": 2,
+            }
 
         prefs = {
+            "printing.print_preview_sticky_settings.appState": json.dumps(obj=settings),
             "download.default_directory": diretorio_download,
             "savefile.default_directory": diretorio_download,
-
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "plugins.always_open_pdf_externally": True,
+            "ignore-certificate-errors": True,
+            "ignore-ssl-errors=yes": True,
+            "allow-running-insecure-content": True,
+            "disable-web-security": True,
+            "profile.accept_untrusted_certs": True,
+            "safebrowsing.enabled": True,
+            "plugins.plugins_disabled": ["Chrome PDF Viewer"],
+            "safebrowsing.disable_download_protection": True,
+            "profile.default_content_settings.popups": 0,
         }
         return prefs
     
