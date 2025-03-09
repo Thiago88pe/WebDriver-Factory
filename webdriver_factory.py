@@ -1,14 +1,16 @@
 import json
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
+from typing import Dict
 
 from dotenv import load_dotenv
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver import Chrome
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import SessionNotCreatedException
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.remote.webdriver import WebDriver
+from webdriver_manager.chrome import ChromeDriverManager
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -19,17 +21,28 @@ class WebDriverOptions(ABC):
     """Interface para configuração de opções e preferências do navegador."""
 
     @abstractmethod
-    def get_prefs(self):
+    def get_prefs(self) -> Dict[str, object]:
+        """Retorna as preferência de downloads.
+
+        :return Dict[str, object]: Dicionário com as preferências de downloads.
+        """
         pass
 
     @abstractmethod
-    def get_options(self):
+    def get_options(self) -> object:
+        """Retorna as opções do navegador.
+
+        :return object: Objeto de opções do navagador.
+        """
         pass
 
 class ChromeWebDriverOptions(WebDriverOptions):
     """Configuração de opções e preferências do navegador Chrome."""
-    def get_prefs(self):
+    def get_prefs(self) -> Dict[str, object]:
+        """Retorna as preferências de download para o Chrome.
 
+        :return Dict[str, object]: Dicionário com as preferências de downloads do Chrome.
+        """
         diretorio_download = os.getcwd()
         settings = {
                 "recentDestinations": [{"id": "Save as PDF", "origin": "local", "account": ""}],
@@ -56,8 +69,11 @@ class ChromeWebDriverOptions(WebDriverOptions):
         }
         return prefs
     
-    def get_options(self):
+    def get_options(self) -> ChromeOptions:
+        """Retorna as opções do Chrome.
 
+        :return ChromeOptions: Objeto de opções do Chrome.
+        """
         options = ChromeOptions()
         if os.getenv(key="HEADLESS", default="false").lower() == "true":
             options.add_argument(argument="--headless")
@@ -78,8 +94,20 @@ class WebDriverFactory:
             logging.error(f"Navegador '{self.browser.upper()}' não suportado.")
             raise ValueError(f"Navegador '{self.browser.upper()}' não suportado.")
 
-    def get_driver(self):
-        """Cria e retorna uma instância do WebDriver configurado para o navegador escolhido."""
+    def get_driver(self) -> WebDriver:
+        """Cria e retorna uma instância do WebDriver configurado para o navegador escolhido.
+
+        :raises ValueError: Se o navegador configurado não for suportado 
+        ou ocorrer um erro ao configurar o serviço.
+        :return WebDriver: Instância configurada do WebDriver.
+
+        
+        Exemplo de Uso:
+        factory = WebDriverFactory()
+        with factory.get_driver() as driver:
+            driver.get("https://www.google.com.br")
+        
+        """
         logging.info(f"Iniciando configurações do WebDriver para o navegador {self.browser.upper()}.")
         driver_class, webdriver_options, service, manager  = self._browsers[self.browser]
 
