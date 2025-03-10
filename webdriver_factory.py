@@ -24,6 +24,10 @@ load_dotenv(override=True)
 class WebDriverOptions(ABC):
     """Interface para configuração de opções e preferências do navegador."""
 
+    def __init__(self) -> None:
+        """Define o diretório padrão de downloads."""
+        self.diretorio_download = os.getcwd()
+
     @abstractmethod
     def get_prefs(self) -> Dict[str, object]:
         """Retorna as preferência de downloads.
@@ -47,7 +51,6 @@ class ChromeWebDriverOptions(WebDriverOptions):
 
         :return Dict[str, object]: Dicionário com as preferências de downloads do Chrome.
         """
-        diretorio_download = os.getcwd()
         settings = {
                 "recentDestinations": [{"id": "Save as PDF", "origin": "local", "account": ""}],
                 "selectedDestinationId": "Save as PDF",
@@ -56,8 +59,8 @@ class ChromeWebDriverOptions(WebDriverOptions):
 
         prefs = {
             "printing.print_preview_sticky_settings.appState": json.dumps(obj=settings),
-            "download.default_directory": diretorio_download,
-            "savefile.default_directory": diretorio_download,
+            "download.default_directory": self.diretorio_download,
+            "savefile.default_directory": self.diretorio_download,
             "download.prompt_for_download": False,
             "download.directory_upgrade": True,
             "plugins.always_open_pdf_externally": True,
@@ -92,10 +95,9 @@ class FirefoxWebDriverOptions(WebDriverOptions):
 
         :return Dict[str, object]: Dicionário com as preferências de download do Firefox.
         """
-        diretorio_download = os.getcwd()
         prefs = {
             "browser.download.folderList": 2,  # 2 = Usar diretório customizado
-            "browser.download.dir": diretorio_download,
+            "browser.download.dir": self.diretorio_download,
             "browser.helperApps.neverAsk.saveToDisk": "application/pdf, application/octet-stream",
             "pdfjs.disabled": True,  # Abre PDF externamente
         }
