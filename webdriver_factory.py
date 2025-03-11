@@ -6,14 +6,17 @@ from typing import Dict
 
 from dotenv import load_dotenv
 from selenium.common.exceptions import SessionNotCreatedException
-from selenium.webdriver import Chrome, Firefox
+from selenium.webdriver import Chrome, Firefox, Edge
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.remote.webdriver import WebDriver
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -117,11 +120,44 @@ class FirefoxWebDriverOptions(WebDriverOptions):
             options.set_preference(name=key, value=value)
         return options
 
+class EdgeWebDriverOptions(WebDriverOptions):
+    """Configuração de opções e preferências do navegador Edge."""
+    def get_prefs(self) -> Dict[str, object]:
+        """Retorna as preferências de download para o Edge.
+
+        :return Dict[str, object]: Dicionário com as preferências de download do Edge.
+        """
+        prefs = {
+            "download.default_directory": self.diretorio_download,
+            "savefile.default_directory": self.diretorio_download,
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True,
+            "plugins.always_open_pdf_externally": True,
+            "excludeSwitches.enable-logging": True
+        }
+        return prefs
+
+    def get_options(self) -> EdgeOptions:
+        """Retorna as opções do Edge.
+
+        :return ChromeOptions: Objeto de opções do Edge.
+        """
+        options = EdgeOptions()
+        if os.getenv(key="HEADLESS", default="false").lower() == "true":
+            options.add_argument(argument="--headless")
+        options.add_argument(argument="--start-maximized")
+
+        options.add_experimental_option(name="prefs", value=self.get_prefs())
+        return options
+
+
 class WebDriverFactory:
     """Factory para criar WebDriver de diferentes navegadores."""
     _browsers = {
         "chrome": (Chrome, ChromeWebDriverOptions, ChromeService, ChromeDriverManager),
         "firefox": (Firefox, FirefoxWebDriverOptions, FirefoxService, GeckoDriverManager),
+        "edge": (Edge, EdgeWebDriverOptions, EdgeService, EdgeChromiumDriverManager),
     }
     def __init__(self) -> None:
         """Inicializa a fábrica de WebDriver, determinando o navegador a ser utilizado."""
@@ -137,12 +173,12 @@ class WebDriverFactory:
         ou ocorrer um erro ao configurar o serviço.
         :return WebDriver: Instância configurada do WebDriver.
 
-        
         Exemplo de Uso:
+        ```
         factory = WebDriverFactory()
         with factory.get_driver() as driver:
             driver.get("https://www.google.com.br")
-        
+        ```
         """
         logging.info(f"Iniciando configurações do WebDriver para o navegador {self.browser.upper()}.")
         driver_class, webdriver_options, service, manager  = self._browsers[self.browser]
