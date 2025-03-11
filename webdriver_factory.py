@@ -84,6 +84,7 @@ class ChromeWebDriverOptions(WebDriverOptions):
         options = ChromeOptions()
         if os.getenv(key="HEADLESS", default="false").lower() == "true":
             options.add_argument(argument="--headless")
+        options.add_argument(argument="--start-maximized")
 
         options.add_experimental_option(name="prefs", value=self.get_prefs())
         return options
