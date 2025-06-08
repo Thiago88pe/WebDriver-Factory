@@ -47,18 +47,20 @@ class WebDriverOptions(ABC):
         """
         pass
 
+
 class ChromeWebDriverOptions(WebDriverOptions):
     """Configuração de opções e preferências do navegador Chrome."""
+
     def get_prefs(self) -> Dict[str, object]:
         """Retorna as preferências de download para o Chrome.
 
         :return Dict[str, object]: Dicionário com as preferências de downloads do Chrome.
         """
         settings = {
-                "recentDestinations": [{"id": "Save as PDF", "origin": "local", "account": ""}],
-                "selectedDestinationId": "Save as PDF",
-                "version": 2,
-            }
+            "recentDestinations": [{"id": "Save as PDF", "origin": "local", "account": ""}],
+            "selectedDestinationId": "Save as PDF",
+            "version": 2,
+        }
 
         prefs = {
             "printing.print_preview_sticky_settings.appState": json.dumps(obj=settings),
@@ -78,7 +80,7 @@ class ChromeWebDriverOptions(WebDriverOptions):
             "profile.default_content_settings.popups": 0,
         }
         return prefs
-    
+
     def get_options(self) -> ChromeOptions:
         """Retorna as opções do Chrome.
 
@@ -92,8 +94,10 @@ class ChromeWebDriverOptions(WebDriverOptions):
         options.add_experimental_option(name="prefs", value=self.get_prefs())
         return options
 
+
 class FirefoxWebDriverOptions(WebDriverOptions):
     """Configuração de opções e preferências do navegador Firefox."""
+
     def get_prefs(self) -> Dict[str, object]:
         """Retorna as preferências de download para o Firefox.
 
@@ -120,8 +124,10 @@ class FirefoxWebDriverOptions(WebDriverOptions):
             options.set_preference(name=key, value=value)
         return options
 
+
 class EdgeWebDriverOptions(WebDriverOptions):
     """Configuração de opções e preferências do navegador Edge."""
+
     def get_prefs(self) -> Dict[str, object]:
         """Retorna as preferências de download para o Edge.
 
@@ -134,7 +140,7 @@ class EdgeWebDriverOptions(WebDriverOptions):
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True,
             "plugins.always_open_pdf_externally": True,
-            "excludeSwitches.enable-logging": True
+            "excludeSwitches.enable-logging": True,
         }
         return prefs
 
@@ -154,11 +160,13 @@ class EdgeWebDriverOptions(WebDriverOptions):
 
 class WebDriverFactory:
     """Factory para criar WebDriver de diferentes navegadores."""
+
     _browsers = {
         "chrome": (Chrome, ChromeWebDriverOptions, ChromeService, ChromeDriverManager),
         "firefox": (Firefox, FirefoxWebDriverOptions, FirefoxService, GeckoDriverManager),
         "edge": (Edge, EdgeWebDriverOptions, EdgeService, EdgeChromiumDriverManager),
     }
+
     def __init__(self) -> None:
         """Inicializa a fábrica de WebDriver, determinando o navegador a ser utilizado."""
         self.browser = os.getenv(key="BROWSER", default="chrome").lower()
@@ -169,7 +177,7 @@ class WebDriverFactory:
     def get_driver(self) -> WebDriver:
         """Cria e retorna uma instância do WebDriver configurado para o navegador escolhido.
 
-        :raises ValueError: Se o navegador configurado não for suportado 
+        :raises ValueError: Se o navegador configurado não for suportado
         ou ocorrer um erro ao configurar o serviço.
         :return WebDriver: Instância configurada do WebDriver.
 
@@ -181,12 +189,12 @@ class WebDriverFactory:
         ```
         """
         logging.info(f"Iniciando configurações do WebDriver para o navegador {self.browser.upper()}.")
-        driver_class, webdriver_options, service, manager  = self._browsers[self.browser]
+        driver_class, webdriver_options, service, manager = self._browsers[self.browser]
 
         # Configura as opções do navegador
         options = webdriver_options().get_options()
         logging.info(f"Opções do navegador {self.browser.upper()} configuradas com sucesso.")
-        
+
         # Configura o serviço do navegador
         try:
             service_instance = service(executable_path=manager().install())
@@ -201,7 +209,9 @@ class WebDriverFactory:
             logging.info(f"WebDriver iniciado para o browser {self.browser.upper()} iniciado com sucesso.")
         except SessionNotCreatedException as e:
             logging.error(f"Erro ao iniciar a instância do WebDriver para o navegador {self.browser.upper()}.")
-            raise ValueError(f"Erro ao iniciar a instância do WebDriver para o navegador {self.browser.upper()}.\n"
-                             f"Verifique se o navegador {self.browser.upper()} está instalado e se a versão é compatível com o driver.\n") from e
+            raise ValueError(
+                f"Erro ao iniciar a instância do WebDriver para o navegador {self.browser.upper()}.\n"
+                f"Verifique se o navegador {self.browser.upper()} está instalado e se a versão é compatível com o driver.\n"
+            ) from e
 
         return driver
