@@ -114,7 +114,7 @@ class FirefoxWebDriverOptions(WebDriverOptions):
     def get_options(self) -> FirefoxOptions:
         """Retorna as opções do Firefox.
 
-        :return ChromeOptions: Objeto de opções do Firefox.
+        :return FirefoxOptions: Objeto de opções do Firefox.
         """
         options = FirefoxOptions()
         if os.getenv(key="HEADLESS", default="false").lower() == "true":
@@ -147,7 +147,7 @@ class EdgeWebDriverOptions(WebDriverOptions):
     def get_options(self) -> EdgeOptions:
         """Retorna as opções do Edge.
 
-        :return ChromeOptions: Objeto de opções do Edge.
+        :return EdgeOptions: Objeto de opções do Edge.
         """
         options = EdgeOptions()
         if os.getenv(key="HEADLESS", default="false").lower() == "true":
